@@ -332,7 +332,31 @@ $ pyright script.py
 
 ---
 
-## Setuptools vs Poetry
+## Packaging and dependency management
+
+---
+
+### Understanding PIP
+
+---
+
+### Setup a project
+
+---
+
+#### Bad workflow
+
+No steup.py, no freezing
+
+---
+
+#### Better workflow
+
+setup.py, freezing to requirements.txt
+
+---
+
+#### Poetry - the best workflor
 
 ---
 
