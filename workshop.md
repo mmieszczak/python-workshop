@@ -7,7 +7,7 @@
 - Understanding Python
 - Zen of Python
 - Static code analysis in Python
-- Setuptools vs Poetry
+- Packaging and dependency management
 - Code complexity
 - Testability
 
@@ -78,28 +78,24 @@ You can think of an object id as a memory address
 
 ```python
 a = 10
-b = a
-# a and b reference the same object
+b = a  # a and b reference the same object
 print(a, id(a))  # output: 10 140641598177808
 print(b, id(b))  # output: 10 140641598177808
-
-a = 11
-# Now a references a new object, while b remains unchanged
+a = 11  # Now a references a new object, while b remains unchanged
 print(a, id(a))  # output: 11 140641598177840
 print(b, id(b))  # output: 10 140641598177808
 ```
 
 ```c
-// Equivalent code in C
+// Similar code in C
 void main() {
-  int *a = &((int){10});
-  int *b = a;
-  printf("%d %p\n", *a, a); // output: 10 0x7ffd0782988c
-  printf("%d %p\n", *b, b); // output: 10 0x7ffd0782988c
-
-  a = &((int){11});
-  printf("%d %p\n", *a, a); // output: 11 0x7ffd07829888
-  printf("%d %p\n", *b, b); // output: 10 0x7ffd0782988c
+  int a = 10;
+  int b = a; // Value of a is copied to variable b
+  printf("%d %p\n", a, &a); // output: 10 0x7ffd07829888
+  printf("%d %p\n", b, &b); // output: 10 0x7ffd0782988c
+  a = 11;
+  printf("%d %p\n", a, &a); // output: 11 0x7ffd07829888
+  printf("%d %p\n", b, &b); // output: 10 0x7ffd0782988c
 }
 ```
 
@@ -297,11 +293,13 @@ foo("some_string")
 ```
 
 ```text
+$ python script.py
 Traceback (most recent call last):
   File "/home/user/repos/python-workshop/script.py", line 4, in <module>
     foo("some_string")
   File "/home/user/repos/python-workshop/script.py", line 2, in foo
     return some_int / 5
+           ~~~~~~~~~^~~
 TypeError: unsupported operand type(s) for /: 'str' and 'int'
 ```
 
@@ -340,23 +338,187 @@ $ pyright script.py
 
 ---
 
+#### PyPI
+
+PyPI (Python Package Index) - central package repository.
+
+---
+
+#### Installing packages
+
+##### Global as root (don't do that)
+
+```bash
+sudo pip install <package-name>
+# Installs to /usr/local
+```
+
+##### Global per-user
+
+```bash
+pip install --user <package-name>
+# Installs to ~/.local
+```
+
+##### In venv
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install <package-name>
+# Installs to .venv
+```
+
+---
+
 ### Setup a project
 
+```bash
+mkdir -p my_test_package
+touch my_test_package/{__init__.py,main.py} README.md
+```
+
+```python
+# main.py
+def main():
+    print("Hello world!")
+
+
+if __name__ == "__main__":
+    main()
+```
+
 ---
 
-#### Bad workflow
+#### Typical workflow
 
-No steup.py, no freezing
+```bash
+# Define dependencies
+echo requests >> requirements.txt
+echo beautifulsoup4 >> requirements.txt
+
+# Create venv
+python -m venv .venv
+. .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run script
+python my_test_package/main.py
+```
 
 ---
 
-#### Better workflow
+#### Workflow using setuptools
 
-setup.py, freezing to requirements.txt
+setup.py
+
+```python
+import setuptools
+setuptools.setup()
+```
+
+setup.cfg
+
+```cfg
+[options]
+packages = find:
+python_requires = >=3.10
+install_requires =
+  requests ~= 2.28.2
+  beautifulsoup4 ~= 4.11.1
+  importlib-metadata; python_version>="3.10"
+
+[options.entry_points]
+console_scripts =
+  my-test-exec = my_test_package.main:main
+```
 
 ---
 
-#### Poetry - the best workflor
+```bash
+# Create and activate venv
+python -m venv .venv
+. .venv/bin/activate
+
+# Optional: install dependencies from frozen requirements.txt
+pip install -r requirements.txt
+
+# Install package to venv
+python setup.py develop
+# or
+pip install -e .
+
+# Run script
+my-test-exec
+```
+
+---
+
+Freeze dependencies
+
+```bash
+pip freeze --exclude-editable > requirements.txt
+```
+
+requirements.txt
+
+```text
+beautifulsoup4==4.11.1
+certifi==2022.12.7
+charset-normalizer==3.0.1
+idna==3.4
+requests==2.28.2
+soupsieve==2.3.2.post1
+urllib3==1.26.14
+```
+
+---
+
+#### Workflow using poetry
+
+```toml
+# pyproject.toml
+[tool.poetry]
+name = "my_test_package"
+version = "0.1.0"
+description = ""
+authors = ["Michał Mieszczak <m.mieszczak@piwik.pro>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+my-test-exec = 'my_test_package.main:main'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.28.2"
+beautifulsoup4 = "^4.11.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+pylama = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+```
+
+---
+
+```bash
+# Guided project initialization
+poetry init
+
+# Install package and dependencies to venv
+poetry install
+
+# Run script
+poetry run my-test-exec
+# Or run from sub-shell
+poetry shell
+my-test-exec
+```
 
 ---
 
