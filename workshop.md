@@ -252,11 +252,12 @@ so they are run automatically.
 
 - pyflakes (syntax checks)
 - pycodestyle (PEP8 style checks)
-- mccabe (code complexity)
 - flake8 (pycodestyle + pyflakes)
 - PyLama (pycodestyle + pyflakes and more)
 - pylint (opionated code analyser)
 - bandit (security checks)
+- mccabe (Cyclomatic Complexity)
+- radon (code metrics)
 
 ---
 
@@ -424,7 +425,6 @@ setup.cfg
 ```cfg
 [options]
 packages = find:
-python_requires = >=3.10
 install_requires =
   requests ~= 2.28.2
   beautifulsoup4 ~= 4.11.1
@@ -478,12 +478,13 @@ urllib3==1.26.14
 
 #### Workflow using poetry
 
+pyproject.toml
+
 ```toml
-# pyproject.toml
 [tool.poetry]
 name = "my_test_package"
 version = "0.1.0"
-description = ""
+description = "My test package"
 authors = ["Michał Mieszczak <m.mieszczak@piwik.pro>"]
 readme = "README.md"
 
@@ -524,9 +525,8 @@ my-test-exec
 
 ## Code complexity
 
----
-
-### Nesting
+- Lines of code
+- Cyclomatic complexity
 
 ---
 
