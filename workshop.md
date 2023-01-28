@@ -8,8 +8,6 @@
 - Zen of Python
 - Static code analysis in Python
 - Packaging and dependency management
-- Code complexity
-- Testability
 
 ---
 
@@ -313,9 +311,10 @@ TypeError: unsupported operand type(s) for /: 'str' and 'int'
 LSP, default in VSCode, created by Microsoft
 
 ```text
-$ mypy script.py
-script.py:4: error: Argument 1 to "foo" has incompatible type "str"; expected "int"
-Found 1 error in 1 file (checked 1 source file)
+$ pyright script.py
+/home/user/repos/python-workshop/script.py
+  /home/user/repos/python-workshop/script.py:4:5 - error: Argument of type "Literal['some_string']" cannot be assigned to parameter "some_int" of type "int" in function "foo"
+    "Literal['some_string']" is incompatible with "int" (reportGeneralTypeIssues)
 ```
 
 ##### mypy
@@ -323,10 +322,9 @@ Found 1 error in 1 file (checked 1 source file)
 Official CLI tool
 
 ```text
-$ pyright script.py
-/home/user/repos/python-workshop/script.py
-  /home/user/repos/python-workshop/script.py:4:5 - error: Argument of type "Literal['some_string']" cannot be assigned to parameter "some_int" of type "int" in function "foo"
-    "Literal['some_string']" is incompatible with "int" (reportGeneralTypeIssues)
+$ mypy script.py
+script.py:4: error: Argument 1 to "foo" has incompatible type "str"; expected "int"
+Found 1 error in 1 file (checked 1 source file)
 ```
 
 ---
@@ -523,33 +521,164 @@ my-test-exec
 
 ---
 
-## Code complexity
-
-- Lines of code
-- Cyclomatic complexity
+## Clean code
 
 ---
 
-### Refactoring - extraction
+### Use meaningful names
+
+Do not use comments to describe what a variable represents
+ant what it is used for.
+Use proper, descriptive name instead.
 
 ---
 
-### Refactoring - inversion
+### Functions
+
+Functions should be small and do one thing only.
+Name of the function should clearly describe what it does.
 
 ---
 
-## Testability
+### Don't repeat yourself
+
+Whenever you do something many times in your code,
+consider extracting this functionality into a separate,
+reusable function/class/module.
+
+---
+
+### Nesting
+
+Deeply nested `if` statements and loops,
+make the code more difficult to follow.
+You can use techniques such as _extraction_
+and _inversion_ to make your code flatter
+and easier to read.
+
+---
+
+#### Nesting example
+
+```python
+def sum_even_in_range(bottom: int, top: int):
+    if top > bottom:
+        sum_ = 0
+        for number in range(bottom, top):
+            if number % 2 == 0:
+                sum_ += number
+        return sum_
+    else:
+        return 0
+```
+
+---
+
+#### Inversion
+
+```python
+def sum_even_in_range(bottom: int, top: int):
+    if top <= bottom:
+        return 0
+
+    sum_ = 0
+    for number in range(bottom, top):
+        if number % 2 == 0:
+            sum_ += number
+    return sum_
+```
+
+---
+
+#### Extraction
+
+```python
+def filter_even(number: int):
+    if number % 2 == 0:
+        return number
+    return 0
+
+def sum_even_in_range(bottom: int, top: int):
+    if top <= bottom:
+        return 0
+
+    sum_ = 0
+    for number in range(bottom, top):
+        sum_ += filter_even(number)
+    return sum_
+```
+
+---
+
+#### Bonus functional solution
+
+```python
+def filter_even(number: int):
+    if number % 2 == 0:
+        return number
+    return 0
+
+def sum_even_in_range(bottom: int, top: int):
+    if top <= bottom:
+        return 0
+
+    return sum(map(filter_even, range(bottom, top)))
+```
 
 ---
 
 ### Dependency inversion
 
+Functions and methods deep down inside the business logic
+should not be responsible for creating and managing resources.
+It is a good idea, to manage resources outside
+and pass them as arguments.
+
 ---
 
-### Pure functions
+LogWriter opens and closes the file.
+
+```python
+class LogWriter:
+    def __init__(self, log_file_path: str):
+        self.log_file = open(log_file_path, "a")
+
+    def info(self, message: str):
+        self.log_file.write(f"INFO: {message}\n")
+
+    def close(self):
+        self.log_file.close()
+
+logger = LogWriter("test.log")
+logger.info("some logging info")
+logger.info("other message")
+logger.close()
+```
 
 ---
 
-### Side effects
+LogWriter uses file opened outside.
+It can also work with any other text buffer.
+This makes the class much more flexible and generic.
+
+```python
+import io
+
+class LogWriter:
+    def __init__(self, log_file: io.TextIOWrapper):
+        self.log_file = log_file
+
+    def info(self, message: str):
+        self.log_file.write(f"INFO: {message}\n")
+
+with open("test.log", "a") as file:
+    logger = LogWriter(file)
+    logger.info("some logging info")
+    logger.info("other message")
+
+string_log = io.StringIO()
+logger = LogWriter(string_log)
+logger.info("message logged to string buffer")
+```
 
 ---
