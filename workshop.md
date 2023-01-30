@@ -8,6 +8,7 @@
 - Zen of Python
 - Static code analysis in Python
 - Packaging and dependency management
+- Clean code
 
 ---
 
@@ -682,3 +683,5 @@ logger.info("message logged to string buffer")
 ```
 
 ---
+
+## Thank you
