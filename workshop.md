@@ -6,7 +6,7 @@
 
 - Understanding Python
 - Zen of Python
-- Static code analysis in Python
+- Static code analysis
 - Packaging and dependency management
 - Clean code
 
@@ -235,7 +235,7 @@ print(c, id(c))  # output: [2, 1, 3, 7] 140568094535488
 
 ---
 
-## Static code analysis in Python
+## Static code analysis
 
 ---
 
